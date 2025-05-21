@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1083941675840",
+    "project_id": "petprojectbookingapp",
+    "storage_bucket": "petprojectbookingapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083941675840:android:562a4689402a537dc390a5",
+        "android_client_info": {
+          "package_name": "com.example.petprojectsbookingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDB1pcOI3kfHMLw7GZop4rp11z_FPIh6qY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
