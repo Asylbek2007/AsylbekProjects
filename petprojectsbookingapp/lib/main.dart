@@ -7,7 +7,7 @@ import 'package:petprojectsbookingapp/src/features/auth/presentation/pages/splas
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseApi().initNotifications();
+
   runApp(MyApp());
 }
 
