@@ -64,12 +64,11 @@ class _LogRegScreenState extends State<LogRegScreen>
         password: _passwordController.text.trim(),
       );
       Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(builder: (_) => MainNavigationWrapper()),
       );
     } catch (e) {
-      MainNavigationWrapper();
+      MyApp();
       setState(() => errorMessage = _getErrorMessage(e.toString()));
     } finally {
       setState(() => _isLoading = false);
@@ -96,11 +95,11 @@ class _LogRegScreenState extends State<LogRegScreen>
       }
 
       Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
         context,
-        MaterialPageRoute(builder: (_) => MyApp()),
+        MaterialPageRoute(builder: (_) => MainNavigationWrapper()),
       );
     } catch (e) {
+      MyApp();
       setState(() => errorMessage = _getErrorMessage(e.toString()));
     } finally {
       setState(() => _isLoading = false);
@@ -108,13 +107,11 @@ class _LogRegScreenState extends State<LogRegScreen>
   }
 
   String _getErrorMessage(String error) {
-    if (error.contains('user-not-found')) {
+    if (error.contains('user-not-found'))
       return 'No user found with this email.';
-    }
     if (error.contains('wrong-password')) return 'Wrong password provided.';
-    if (error.contains('email-already-in-use')) {
+    if (error.contains('email-already-in-use'))
       return 'Email is already registered.';
-    }
     if (error.contains('weak-password')) return 'Password is too weak.';
     if (error.contains('invalid-email')) return 'Invalid email address.';
     return 'An error occurred. Please try again.';
@@ -208,10 +205,12 @@ class _LogRegScreenState extends State<LogRegScreen>
                       children: [
                         const SizedBox(height: 8),
 
+                        // Tab Selector
                         _buildTabSelector(),
                         const SizedBox(height: 22),
                         if (errorMessage.isNotEmpty) _buildErrorMessage(),
 
+                        // Form Content
                         Flexible(
                           child:
                               isLogin
@@ -498,9 +497,8 @@ class _LogRegScreenState extends State<LogRegScreen>
           ],
         ),
         child: ElevatedButton(
-          onPressed: () {
-            handleLogin();
-          },
+          onPressed: _isLoading ? null : onPressed,
+
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
