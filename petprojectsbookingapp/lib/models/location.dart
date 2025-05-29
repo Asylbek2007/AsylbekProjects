@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:petprojectsbookingapp/models/room_chip.dart';
-import 'package:petprojectsbookingapp/src/features/auth/presentation/pages/user_scree.dart';
 
 class LocationCard extends StatelessWidget {
   final String title;
