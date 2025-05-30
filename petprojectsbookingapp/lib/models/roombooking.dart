@@ -8,7 +8,6 @@ class RoomBookingScreen extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          // Top section with dark background
           Container(
             padding: EdgeInsets.only(top: 50, bottom: 20, left: 20, right: 20),
             decoration: BoxDecoration(
@@ -21,7 +20,6 @@ class RoomBookingScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Status bar simulation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -50,7 +48,6 @@ class RoomBookingScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 30),
 
-                // Greeting and location
                 Text(
                   'Hi Асылбек, you\'re at',
                   style: TextStyle(color: Colors.white70, fontSize: 16),
@@ -72,7 +69,6 @@ class RoomBookingScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 25),
 
-                // Search bar and filter button
                 Row(
                   children: [
                     Expanded(
@@ -112,14 +108,12 @@ class RoomBookingScreen extends StatelessWidget {
             ),
           ),
 
-          // Main content
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Filter chips
                   Row(
                     children: [
                       FilterChip(
@@ -136,7 +130,6 @@ class RoomBookingScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 20),
 
-                  // Featured room card
                   Container(
                     height: 400,
                     decoration: BoxDecoration(
@@ -233,7 +226,6 @@ class RoomBookingScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 30),
 
-                  // Picked for you section
                   Text(
                     'Picked for you',
                     style: TextStyle(
@@ -244,7 +236,6 @@ class RoomBookingScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 15),
 
-                  // Room cards grid
                   Row(
                     children: [
                       Expanded(
@@ -269,7 +260,6 @@ class RoomBookingScreen extends StatelessWidget {
             ),
           ),
 
-          // Note: Bottom navigation is now handled by MainNavigationWrapper
         ],
       ),
     );
