@@ -32,4 +32,6 @@ class Booking {
       date: DateTime.parse(map['date']),
     );
   }
+
+  String? get title => null;
 }
