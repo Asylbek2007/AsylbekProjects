@@ -509,12 +509,9 @@ class _LogRegScreenState extends State<LogRegScreen>
           child:
               _isLoading
                   ? const SizedBox(
-                    height: 3,
-                    width: 4,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
+                    height: 10,
+                    width: 10,
+                    child: CircularProgressIndicator(color: Colors.white),
                   )
                   : Text(
                     text,
