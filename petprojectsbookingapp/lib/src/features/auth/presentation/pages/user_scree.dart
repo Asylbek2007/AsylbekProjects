@@ -6,7 +6,6 @@ import 'package:petprojectsbookingapp/models/location.dart';
 import 'package:petprojectsbookingapp/models/profile.dart';
 import 'package:petprojectsbookingapp/models/roombooking.dart';
 
-// Different pages for navigation
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -37,7 +36,6 @@ class _SchedulePageState extends State<SchedulePage> {
         return;
       }
 
-      // Check if room is already booked
       final existingBooking =
           await _firestore
               .collection('bookings')
@@ -54,7 +52,6 @@ class _SchedulePageState extends State<SchedulePage> {
         return;
       }
 
-      // Add booking to Firestore
       await _firestore.collection('bookings').add({
         'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'location': location,
@@ -76,12 +73,10 @@ class _SchedulePageState extends State<SchedulePage> {
     }
   }
 
-  // ИСПРАВЛЕННАЯ функция удаления с проверкой mounted
   Future<void> _deleteBooking(String docId) async {
     try {
       await _firestore.collection('bookings').doc(docId).delete();
 
-      // Проверяем, что виджет все еще активен перед показом сообщения
       if (mounted) {
         _showMessage('Booking cancelled');
       }
@@ -98,7 +93,6 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   void _showMessage(String message) {
-    // Дополнительная проверка перед показом SnackBar
     if (mounted) {
       ScaffoldMessenger.of(
         context,
@@ -111,7 +105,6 @@ class _SchedulePageState extends State<SchedulePage> {
     return Scaffold(
       body: Column(
         children: [
-          // Header section
           Container(
             padding: EdgeInsets.only(top: 50, bottom: 20, left: 20, right: 20),
             decoration: BoxDecoration(
@@ -147,7 +140,6 @@ class _SchedulePageState extends State<SchedulePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Locations Section
                   Text(
                     'Available Locations',
                     style: TextStyle(
@@ -158,7 +150,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ),
                   SizedBox(height: 15),
 
-                  // Sport Hall
                   LocationCard(
                     title: 'Sport Hall',
                     icon: Icons.sports_basketball,
@@ -168,7 +159,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ),
                   SizedBox(height: 15),
 
-                  // Eating Joint
                   LocationCard(
                     title: 'Eating Joint',
                     icon: Icons.restaurant,
@@ -178,7 +168,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ),
                   SizedBox(height: 15),
 
-                  // Rooms for Activities
                   LocationCard(
                     title: 'Activity Rooms',
                     icon: Icons.meeting_room,
@@ -188,7 +177,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ),
                   SizedBox(height: 30),
 
-                  // My Bookings Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -218,7 +206,6 @@ class _SchedulePageState extends State<SchedulePage> {
                   ),
                   SizedBox(height: 15),
 
-                  // Real-time Bookings from Firestore
                   StreamBuilder<QuerySnapshot>(
                     stream:
                         _firestore
@@ -342,7 +329,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     },
                   ),
 
-                  SizedBox(height: 100), // Space for bottom navigation
+                  SizedBox(height: 100), 
                 ],
               ),
             ),
@@ -352,7 +339,6 @@ class _SchedulePageState extends State<SchedulePage> {
     );
   }
 
-  // ДОБАВЛЕН диалог подтверждения удаления
   void _showDeleteDialog(String docId) {
     showDialog(
       context: context,
@@ -379,12 +365,10 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 }
 
-// All Bookings Page to see everyone's bookings
 class AllBookingsPage extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // ИСПРАВЛЕННАЯ функция удаления с проверкой mounted
   Future<void> _deleteMyBooking(
     BuildContext context,
     String docId,
@@ -394,7 +378,6 @@ class AllBookingsPage extends StatelessWidget {
       try {
         await _firestore.collection('bookings').doc(docId).delete();
 
-        // Проверяем, что контекст все еще валиден
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -416,7 +399,6 @@ class AllBookingsPage extends StatelessWidget {
     }
   }
 
-  // ДОБАВЛЕН диалог подтверждения для AllBookingsPage
   void _showDeleteDialog(BuildContext context, String docId, String userId) {
     showDialog(
       context: context,
@@ -589,7 +571,6 @@ class AllBookingsPage extends StatelessWidget {
   }
 }
 
-// Main wrapper with bottom navigation
 class MainNavigationWrapper extends StatefulWidget {
   const MainNavigationWrapper({super.key});
 
