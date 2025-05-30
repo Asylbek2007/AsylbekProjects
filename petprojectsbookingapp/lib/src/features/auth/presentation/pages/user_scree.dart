@@ -31,7 +31,9 @@ class _SchedulePageState extends State<SchedulePage> {
     try {
       final user = _auth.currentUser;
       if (user == null) {
-        _showMessage('Please log in to make a booking');
+        if (mounted) {
+          _showMessage('Please log in to make a booking');
+        }
         return;
       }
 
@@ -46,7 +48,9 @@ class _SchedulePageState extends State<SchedulePage> {
               .get();
 
       if (existingBooking.docs.isNotEmpty) {
-        _showMessage('This room is already booked for this time');
+        if (mounted) {
+          _showMessage('This room is already booked for this time');
+        }
         return;
       }
 
@@ -62,18 +66,29 @@ class _SchedulePageState extends State<SchedulePage> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      _showMessage('Booking successful!');
+      if (mounted) {
+        _showMessage('Booking successful!');
+      }
     } catch (e) {
-      _showMessage('Error: ${e.toString()}');
+      if (mounted) {
+        _showMessage('Error: ${e.toString()}');
+      }
     }
   }
 
+  // ИСПРАВЛЕННАЯ функция удаления с проверкой mounted
   Future<void> _deleteBooking(String docId) async {
     try {
       await _firestore.collection('bookings').doc(docId).delete();
-      _showMessage('Booking cancelled');
+
+      // Проверяем, что виджет все еще активен перед показом сообщения
+      if (mounted) {
+        _showMessage('Booking cancelled');
+      }
     } catch (e) {
-      _showMessage('Error: ${e.toString()}');
+      if (mounted) {
+        _showMessage('Error: ${e.toString()}');
+      }
     }
   }
 
@@ -83,9 +98,12 @@ class _SchedulePageState extends State<SchedulePage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    // Дополнительная проверка перед показом SnackBar
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    }
   }
 
   @override
@@ -145,12 +163,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     title: 'Sport Hall',
                     icon: Icons.sports_basketball,
                     color: Color(0xFF4CAF50),
-                    rooms: [
-                      'Basketball Court',
-                      'Tennis Court',
-                      'Gym Area',
-                      'Swimming Pool',
-                    ],
+                    rooms: ['Tennis Court'],
                     onBookRoom: _addBooking,
                   ),
                   SizedBox(height: 15),
@@ -160,12 +173,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     title: 'Eating Joint',
                     icon: Icons.restaurant,
                     color: Color(0xFFFF9800),
-                    rooms: [
-                      'Main Dining',
-                      'Private Dining',
-                      'Coffee Corner',
-                      'Outdoor Terrace',
-                    ],
+                    rooms: ['Main Dining'],
                     onBookRoom: _addBooking,
                   ),
                   SizedBox(height: 15),
@@ -175,12 +183,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     title: 'Activity Rooms',
                     icon: Icons.meeting_room,
                     color: Color(0xFF9C27B0),
-                    rooms: [
-                      'Conference Room A',
-                      'Conference Room B',
-                      'Study Room',
-                      'Workshop Space',
-                    ],
+                    rooms: ['Conference Room A', 'Conference Room B'],
                     onBookRoom: _addBooking,
                   ),
                   SizedBox(height: 30),
@@ -324,7 +327,8 @@ class _SchedulePageState extends State<SchedulePage> {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () => _deleteBooking(doc.id),
+                                      onPressed:
+                                          () => _showDeleteDialog(doc.id),
                                       icon: Icon(
                                         Icons.delete_outline,
                                         color: Colors.red,
@@ -347,6 +351,32 @@ class _SchedulePageState extends State<SchedulePage> {
       ),
     );
   }
+
+  // ДОБАВЛЕН диалог подтверждения удаления
+  void _showDeleteDialog(String docId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Booking?'),
+          content: Text('Are you sure you want to cancel this booking?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteBooking(docId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
 
 // All Bookings Page to see everyone's bookings
@@ -354,6 +384,7 @@ class AllBookingsPage extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // ИСПРАВЛЕННАЯ функция удаления с проверкой mounted
   Future<void> _deleteMyBooking(
     BuildContext context,
     String docId,
@@ -362,15 +393,53 @@ class AllBookingsPage extends StatelessWidget {
     if (_auth.currentUser?.uid == userId) {
       try {
         await _firestore.collection('bookings').doc(docId).delete();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Booking cancelled')));
+
+        // Проверяем, что контекст все еще валиден
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Booking cancelled'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
+  }
+
+  // ДОБАВЛЕН диалог подтверждения для AllBookingsPage
+  void _showDeleteDialog(BuildContext context, String docId, String userId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('Delete Booking?'),
+          content: Text('Are you sure you want to cancel this booking?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            TextButton(
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _deleteMyBooking(context, docId, userId);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -474,7 +543,7 @@ class AllBookingsPage extends StatelessWidget {
                               ),
                               IconButton(
                                 onPressed:
-                                    () => _deleteMyBooking(
+                                    () => _showDeleteDialog(
                                       context,
                                       doc.id,
                                       data['userId'],
