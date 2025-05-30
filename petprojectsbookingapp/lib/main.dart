@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:petprojectsbookingapp/firebase_api.dart';
 import 'package:petprojectsbookingapp/firebase_options.dart';
 import 'package:petprojectsbookingapp/src/features/auth/presentation/pages/splash.dart';
 
