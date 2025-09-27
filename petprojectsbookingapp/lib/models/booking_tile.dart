@@ -16,7 +16,7 @@ class BookingTile extends StatelessWidget {
         leading: Container(
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Color(0xFF4A6CF7).withOpacity(0.1),
+            color: Color(0xFF4A6CF7).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(Icons.event, color: Color(0xFF4A6CF7)),
