@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:petprojectsbookingapp/main.dart';
-import 'package:petprojectsbookingapp/src/features/auth/presentation/pages/user_scree.dart';
+import 'package:petprojectsbookingapp/src/core/router/app_router.dart';
 
 class LogRegScreen extends StatefulWidget {
   const LogRegScreen({super.key});
@@ -63,15 +62,17 @@ class _LogRegScreenState extends State<LogRegScreen>
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => MainNavigationWrapper()),
-      );
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     } catch (e) {
-      MyApp();
-      setState(() => errorMessage = _getErrorMessage(e.toString()));
+      if (mounted) {
+        setState(() => errorMessage = _getErrorMessage(e.toString()));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -94,26 +95,36 @@ class _LogRegScreenState extends State<LogRegScreen>
         await _auth.currentUser?.updateDisplayName(_nameController.text.trim());
       }
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => MainNavigationWrapper()),
-      );
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     } catch (e) {
-      MyApp();
-      setState(() => errorMessage = _getErrorMessage(e.toString()));
+      if (mounted) {
+        setState(() => errorMessage = _getErrorMessage(e.toString()));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   String _getErrorMessage(String error) {
-    if (error.contains('user-not-found'))
+    if (error.contains('user-not-found')) {
       return 'No user found with this email.';
-    if (error.contains('wrong-password')) return 'Wrong password provided.';
-    if (error.contains('email-already-in-use'))
+    }
+    if (error.contains('wrong-password')) {
+      return 'Wrong password provided.';
+    }
+    if (error.contains('email-already-in-use')) {
       return 'Email is already registered.';
-    if (error.contains('weak-password')) return 'Password is too weak.';
-    if (error.contains('invalid-email')) return 'Invalid email address.';
+    }
+    if (error.contains('weak-password')) {
+      return 'Password is too weak.';
+    }
+    if (error.contains('invalid-email')) {
+      return 'Invalid email address.';
+    }
     return 'An error occurred. Please try again.';
   }
 
@@ -151,7 +162,7 @@ class _LogRegScreenState extends State<LogRegScreen>
                             Container(
                               padding: const EdgeInsets.all(5),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.2),
+                                color: Colors.blue.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
@@ -174,7 +185,7 @@ class _LogRegScreenState extends State<LogRegScreen>
                             Text(
                               "Discover and manage your bookings with ease",
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontSize: 16,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -254,7 +265,7 @@ class _LogRegScreenState extends State<LogRegScreen>
                       isLogin
                           ? [
                             BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
+                              color: Colors.blue.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -289,7 +300,7 @@ class _LogRegScreenState extends State<LogRegScreen>
                       !isLogin
                           ? [
                             BoxShadow(
-                              color: Colors.blue.withOpacity(0.3),
+                              color: Colors.blue.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -490,7 +501,7 @@ class _LogRegScreenState extends State<LogRegScreen>
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withValues(alpha: 0.3),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
