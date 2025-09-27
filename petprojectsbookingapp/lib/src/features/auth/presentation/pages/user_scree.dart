@@ -19,7 +19,7 @@ class SchedulePage extends StatefulWidget {
   const SchedulePage({super.key});
 
   @override
-  _SchedulePageState createState() => _SchedulePageState();
+  State<SchedulePage> createState() => _SchedulePageState();
 }
 
 class _SchedulePageState extends State<SchedulePage> {
@@ -273,7 +273,7 @@ class _SchedulePageState extends State<SchedulePage> {
                                   borderRadius: BorderRadius.circular(15),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.grey.withOpacity(0.1),
+                                      color: Colors.grey.withValues(alpha: 0.1),
                                       spreadRadius: 2,
                                       blurRadius: 5,
                                     ),
@@ -329,7 +329,7 @@ class _SchedulePageState extends State<SchedulePage> {
                     },
                   ),
 
-                  SizedBox(height: 100), 
+                  SizedBox(height: 100),
                 ],
               ),
             ),
@@ -366,8 +366,10 @@ class _SchedulePageState extends State<SchedulePage> {
 }
 
 class AllBookingsPage extends StatelessWidget {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  const AllBookingsPage({super.key});
+
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> _deleteMyBooking(
     BuildContext context,
@@ -483,7 +485,7 @@ class AllBookingsPage extends StatelessWidget {
                           : null,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withValues(alpha: 0.1),
                       spreadRadius: 2,
                       blurRadius: 5,
                     ),
@@ -575,7 +577,7 @@ class MainNavigationWrapper extends StatefulWidget {
   const MainNavigationWrapper({super.key});
 
   @override
-  _MainNavigationWrapperState createState() => _MainNavigationWrapperState();
+  State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
 }
 
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
