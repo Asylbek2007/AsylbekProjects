@@ -1,7 +1,162 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:petprojectsbookingapp/src/core/services/favorites_service.dart';
+import 'package:petprojectsbookingapp/src/features/home/presentation/pages/room_info_page.dart';
 
-class RoomBookingScreen extends StatelessWidget {
+class RoomBookingScreen extends StatefulWidget {
   const RoomBookingScreen({super.key});
+
+  @override
+  State<RoomBookingScreen> createState() => _RoomBookingScreenState();
+}
+
+class _RoomBookingScreenState extends State<RoomBookingScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FavoritesService _favoritesService = FavoritesService.instance;
+  String _selectedFilter = 'All';
+  String _searchQuery = '';
+  Set<String> _favoriteRooms = {};
+
+  final List<String> _filterOptions = [
+    'All',
+    'Meeting Rooms',
+    'Conference Rooms',
+    'Study Rooms',
+    'Private Rooms',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadFavorites() async {
+    try {
+      final favorites = await _favoritesService.getFavorites();
+      if (mounted) {
+        setState(() {
+          _favoriteRooms = favorites;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite(String roomName) async {
+    if (_favoriteRooms.contains(roomName)) {
+      await _favoritesService.removeFavorite(roomName);
+      setState(() {
+        _favoriteRooms.remove(roomName);
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$roomName removed from favorites'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      await _favoritesService.addFavorite(roomName);
+      setState(() {
+        _favoriteRooms.add(roomName);
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$roomName added to favorites'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  String _getUserName() {
+    final user = _auth.currentUser;
+    if (user != null) {
+      // Try to get display name first, then email username, then default
+      return user.displayName?.split(' ').first ??
+          user.email?.split('@').first ??
+          'User';
+    }
+    return 'Guest';
+  }
+
+  List<Map<String, dynamic>> _getFilteredRooms() {
+    List<Map<String, dynamic>> allRooms = [
+      {
+        'name': 'Тапчан',
+        'type': 'Meeting Rooms',
+        'image':
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'description': 'Large meeting room with modern facilities',
+      },
+      {
+        'name': '103 каб',
+        'type': 'Conference Rooms',
+        'image':
+            'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'description': 'Conference room for presentations',
+      },
+      {
+        'name': '105 каб',
+        'type': 'Study Rooms',
+        'image':
+            'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'description': 'Quiet study room for individual work',
+      },
+      {
+        'name': 'Private Office',
+        'type': 'Private Rooms',
+        'image':
+            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'description': 'Private office space for confidential meetings',
+      },
+      {
+        'name': 'Library Study',
+        'type': 'Study Rooms',
+        'image':
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'description': 'Silent study environment with books',
+      },
+      {
+        'name': 'Tech Lab',
+        'type': 'Conference Rooms',
+        'image':
+            'https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        'description': 'High-tech room with modern equipment',
+      },
+    ];
+
+    return allRooms.where((room) {
+      // Filter by category
+      bool categoryMatch =
+          _selectedFilter == 'All' || room['type'] == _selectedFilter;
+
+      // Filter by search query
+      bool searchMatch =
+          _searchQuery.isEmpty ||
+          room['name'].toLowerCase().contains(_searchQuery) ||
+          room['type'].toLowerCase().contains(_searchQuery) ||
+          room['description'].toLowerCase().contains(_searchQuery);
+
+      return categoryMatch && searchMatch;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +204,7 @@ class RoomBookingScreen extends StatelessWidget {
                 SizedBox(height: 30),
 
                 Text(
-                  'Hi Асылбек, you\'re at',
+                  'Hi ${_getUserName()}, you\'re at',
                   style: TextStyle(color: Colors.white70, fontSize: 16),
                 ),
                 SizedBox(height: 8),
@@ -79,6 +234,12 @@ class RoomBookingScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value.toLowerCase();
+                            });
+                          },
                           decoration: InputDecoration(
                             hintText: 'Looking for room',
                             hintStyle: TextStyle(color: Colors.grey),
@@ -110,124 +271,222 @@ class RoomBookingScreen extends StatelessWidget {
 
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                100,
+              ), // Add bottom padding for navigation bar
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      FilterChip(
-                        label: Text(
-                          'All',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        selected: true,
-                        onSelected: (value) {},
-                        selectedColor: Color(0xFF4A6CF7),
-                        backgroundColor: Colors.grey[200],
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children:
+                          _filterOptions.map((filter) {
+                            final isSelected = _selectedFilter == filter;
+                            return Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: FilterChip(
+                                label: Text(
+                                  filter,
+                                  style: TextStyle(
+                                    color:
+                                        isSelected
+                                            ? Colors.white
+                                            : Colors.grey[700],
+                                    fontWeight:
+                                        isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                  ),
+                                ),
+                                selected: isSelected,
+                                onSelected: (value) {
+                                  setState(() {
+                                    _selectedFilter = filter;
+                                  });
+                                },
+                                selectedColor: Color(0xFF4A6CF7),
+                                backgroundColor: Colors.grey[200],
+                                checkmarkColor: Colors.white,
+                              ),
+                            );
+                          }).toList(),
+                    ),
                   ),
                   SizedBox(height: 20),
 
-                  Container(
-                    height: 400,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Stack(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(
-                                  'https://images.unsplash.com/photo-1501436513145-30f24e19fcc4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                                ),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                  // Featured room (first filtered result)
+                  Builder(
+                    builder: (context) {
+                      final filteredRooms = _getFilteredRooms();
+                      if (filteredRooms.isEmpty) {
+                        return Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey[100],
                           ),
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withOpacity(0.7),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 20,
-                            right: 20,
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.black26,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Icon(
-                                Icons.favorite_border,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 20,
-                            left: 20,
-                            right: 20,
+                          child: Center(
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'Тапчан',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                Icon(
+                                  Icons.search_off,
+                                  size: 50,
+                                  color: Colors.grey[400],
                                 ),
                                 SizedBox(height: 10),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
+                                Text(
+                                  'No rooms found',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black54,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    '2000KZ / 1 hour',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                    ),
+                                ),
+                                SizedBox(height: 5),
+                                Text(
+                                  'Try adjusting your search or filter',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        );
+                      }
+
+                      final featuredRoom = filteredRooms.first;
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => RoomInfoPage(
+                                    roomName: featuredRoom['name'],
+                                    location: 'Main Building',
+                                    roomType: featuredRoom['type'],
+                                    price:
+                                        '', // Empty price since we removed pricing
+                                    image: featuredRoom['image'],
+                                    description: featuredRoom['description'],
+                                  ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          height: 400,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: NetworkImage(
+                                        featuredRoom['image'],
+                                      ),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.black.withValues(alpha: 0.7),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 20,
+                                  right: 20,
+                                  child: GestureDetector(
+                                    onTap:
+                                        () => _toggleFavorite(
+                                          featuredRoom['name'],
+                                        ),
+                                    child: Container(
+                                      padding: EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black26,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Icon(
+                                        _favoriteRooms.contains(
+                                              featuredRoom['name'],
+                                            )
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color:
+                                            _favoriteRooms.contains(
+                                                  featuredRoom['name'],
+                                                )
+                                                ? Colors.red
+                                                : Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 20,
+                                  left: 20,
+                                  right: 20,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        featuredRoom['name'],
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 5),
+                                      Text(
+                                        featuredRoom['type'],
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   SizedBox(height: 30),
 
                   Text(
-                    'Picked for you',
+                    'Available Rooms',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -236,30 +495,69 @@ class RoomBookingScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 15),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: RoomCard(
-                          image:
-                              'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                          price: '103 каб',
-                        ),
-                      ),
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: RoomCard(
-                          image:
-                              'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                          price: '105 каб',
-                        ),
-                      ),
-                    ],
+                  Builder(
+                    builder: (context) {
+                      final filteredRooms = _getFilteredRooms();
+                      if (filteredRooms.isEmpty) {
+                        return Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            color: Colors.grey[100],
+                          ),
+                          child: Center(
+                            child: Text(
+                              'No rooms match your criteria',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      // Show remaining rooms (skip the first one as it's featured)
+                      final remainingRooms =
+                          filteredRooms.skip(1).take(2).toList();
+
+                      if (remainingRooms.isEmpty) {
+                        return SizedBox.shrink();
+                      }
+
+                      return Row(
+                        children:
+                            remainingRooms.map((room) {
+                              return Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.only(
+                                    right:
+                                        remainingRooms.indexOf(room) == 0
+                                            ? 15
+                                            : 0,
+                                  ),
+                                  child: RoomCard(
+                                    name: room['name'],
+                                    image: room['image'],
+                                    type: room['type'],
+                                    description: room['description'],
+                                    location: 'Main Building',
+                                    isFavorite: _favoriteRooms.contains(
+                                      room['name'],
+                                    ),
+                                    onFavoriteToggle:
+                                        () => _toggleFavorite(room['name']),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
           ),
-
         ],
       ),
     );
@@ -267,55 +565,130 @@ class RoomBookingScreen extends StatelessWidget {
 }
 
 class RoomCard extends StatelessWidget {
+  final String name;
   final String image;
-  final String price;
+  final String? type;
+  final String description;
+  final String location;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteToggle;
 
-  const RoomCard({super.key, required this.image, required this.price});
+  const RoomCard({
+    super.key,
+    required this.name,
+    required this.image,
+    required this.description,
+    required this.location,
+    this.type,
+    this.isFavorite = false,
+    this.onFavoriteToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 3)),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(image),
-                  fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => RoomInfoPage(
+                  roomName: name,
+                  location: location,
+                  roomType: type ?? 'Room',
+                  price: '', // Empty price since we removed pricing
+                  image: image,
+                  description: description,
                 ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 10,
-              left: 10,
-              child: Text(
-                price,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          ),
+        );
+      },
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 3),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(image),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.6),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () {
+                    if (onFavoriteToggle != null) {
+                      onFavoriteToggle!();
+                    }
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 10,
+                left: 10,
+                right: 10,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (type != null) ...[
+                      SizedBox(height: 2),
+                      Text(
+                        type!,
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
