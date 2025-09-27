@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:petprojectsbookingapp/src/features/auth/presentation/pages/login_page.dart';
+import 'package:petprojectsbookingapp/src/core/router/app_router.dart';
 import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
@@ -13,11 +13,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LogRegScreen()),
-      );
+    Timer(Duration(seconds: 2), () {
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, AppRoutes.authGate);
     });
   }
 
